@@ -1,0 +1,221 @@
+1. Gambaran Umum Deployment Sistem
+Sebelum dilakukan deployment, seluruh komponen sistem berjalan pada komputer lokal menggunakan XAMPP. Kondisi tersebut menyebabkan website, database, dan REST API hanya dapat diakses dari perangkat yang berada pada jaringan yang sama.
+Arsitektur awal:
+NodeMCU
+   ↓
+Laptop (XAMPP)
+   ↓
+MySQL
+   ↓
+Dashboard
+Kelemahan:
+•	Sistem hanya berjalan ketika laptop menyala. 
+•	Dashboard tidak dapat diakses dari luar jaringan lokal. 
+•	NodeMCU harus berada pada jaringan yang sama dengan laptop. 
+•	Belum memenuhi konsep IoT secara penuh. 
+Oleh karena itu sistem dipindahkan ke VPS Ubuntu agar seluruh layanan berjalan pada server yang aktif selama 24 jam.
+________________________________________
+2. Persiapan dan Pengujian Koneksi VPS
+Sebelum melakukan instalasi, langkah pertama adalah memastikan VPS dapat diakses.
+Perintah:
+ping 10.33.109.57
+Fungsi:
+•	Menguji konektivitas jaringan. 
+•	Memastikan VPS aktif. 
+•	Memastikan tidak ada masalah routing jaringan. 
+Jika berhasil biasanya muncul:
+Reply from 10.33.109.57
+Artinya VPS dapat dijangkau.
+________________________________________
+3. Login ke VPS Menggunakan SSH
+SSH digunakan untuk mengendalikan VPS dari komputer lokal.
+Perintah:
+ssh ubuntu-iqbal@10.33.109.57
+Penjelasan:
+ssh            = program remote access
+ubuntu-iqbal   = username VPS
+10.33.109.57   = alamat server
+Setelah login berhasil, seluruh perintah berikutnya dijalankan langsung pada VPS Ubuntu.
+________________________________________
+4. Update Repository Ubuntu
+Sebelum instalasi software dilakukan update daftar paket.
+Perintah:
+sudo apt update
+Fungsi:
+•	Mengambil informasi paket terbaru dari repository Ubuntu. 
+•	Memastikan software yang diinstall merupakan versi terbaru yang tersedia. 
+Keterangan:
+sudo = menjalankan perintah sebagai administrator
+apt  = package manager Ubuntu
+________________________________________
+5. Instalasi Apache Web Server
+Apache merupakan web server yang bertugas menerima request dari browser maupun NodeMCU.
+Perintah:
+sudo apt install apache2 -y
+Keterangan:
+install apache2 = memasang Apache
+-y              = otomatis menjawab Yes
+Setelah selesai:
+systemctl status apache2
+Untuk memastikan service berjalan.
+Jika berhasil:
+active (running)
+________________________________________
+6. Pengujian Apache
+Buka browser:
+http://10.33.109.57
+Jika muncul:
+Apache2 Ubuntu Default Page
+berarti Apache berhasil berjalan.
+Alur kerjanya:
+Browser
+   ↓
+Apache
+   ↓
+Website
+________________________________________
+7. Instalasi PHP
+PHP digunakan sebagai backend website dan REST API.
+Perintah:
+sudo apt install php libapache2-mod-php php-mysql -y
+Penjelasan paket:
+Paket	Fungsi
+php	Bahasa backend
+libapache2-mod-php	Menghubungkan Apache dengan PHP
+php-mysql	Menghubungkan PHP dengan MySQL
+Setelah instalasi:
+php -v
+Untuk melihat versi PHP.
+________________________________________
+8. Instalasi MySQL
+Database digunakan untuk menyimpan seluruh data sistem.
+Perintah:
+sudo apt install mysql-server -y
+Setelah selesai cek status:
+sudo systemctl status mysql
+Jika muncul:
+active (running)
+maka MySQL siap digunakan.
+________________________________________
+9. Membuat Database Sistem
+Masuk ke MySQL:
+sudo mysql
+Membuat database:
+CREATE DATABASE rfid_db;
+Fungsi:
+rfid_db
+menjadi tempat penyimpanan seluruh tabel sistem.
+________________________________________
+10. Membuat User Database
+Perintah:
+CREATE USER 'smartdoor_user'@'localhost'
+IDENTIFIED BY 'SmartDoor_2026@';
+Tujuan:
+•	Tidak menggunakan akun root secara langsung. 
+•	Lebih aman. 
+•	Mudah dikontrol hak aksesnya. 
+________________________________________
+11. Memberikan Hak Akses Database
+Perintah:
+GRANT ALL PRIVILEGES
+ON rfid_db.*
+TO 'smartdoor_user'@'localhost';
+Artinya:
+User tersebut diperbolehkan:
+•	SELECT 
+•	INSERT 
+•	UPDATE 
+•	DELETE 
+pada database:
+rfid_db
+Lalu jalankan:
+FLUSH PRIVILEGES;
+Agar perubahan segera diterapkan.
+________________________________________
+12. Upload Project ke VPS
+Upload menggunakan WinSCP.
+Folder tujuan:
+/var/www/html/rfid-project
+Penjelasan:
+/var/www/html
+merupakan root directory Apache.
+Artinya:
+http://10.33.109.57/rfid-project
+akan mengarah ke folder tersebut.
+________________________________________
+13. Mengatur Permission Project
+Perintah:
+sudo chown -R ubuntu-iqbal:ubuntu-iqbal /var/www/html/rfid-project
+Fungsi:
+Mengubah pemilik file.
+Kemudian:
+sudo chmod -R 755 /var/www/html/rfid-project
+Fungsi:
+Memberikan hak baca dan eksekusi kepada Apache.
+________________________________________
+14. Import Database Project
+Upload file:
+rfid_project.sql
+Kemudian import:
+mysql -u smartdoor_user -p rfid_db < /var/www/html/rfid-project/database/rfid_project.sql
+Penjelasan:
+mysql
+menjalankan client MySQL
+-u
+username
+-p
+password
+<
+mengambil isi file SQL dan memasukkannya ke database.
+Setelah selesai:
+SHOW TABLES;
+untuk memastikan seluruh tabel berhasil dibuat.
+________________________________________
+15. Konfigurasi Koneksi PHP ke MySQL
+File:
+config/database.php
+berisi:
+return [
+    'host' => 'localhost',
+    'user' => 'smartdoor_user',
+    'password' => 'SmartDoor_2026@',
+    'name' => 'rfid_db'
+];
+Fungsi:
+Menghubungkan:
+Website PHP
+      ↓
+Database MySQL
+________________________________________
+16. Deploy NodeMCU
+Sebelum upload firmware, alamat server harus diganti dari localhost menjadi alamat VPS.
+Contoh:
+const char* SERVER_BASE =
+"http://10.33.109.57/rfid-project";
+Mengapa?
+Karena NodeMCU tidak bisa mengakses:
+localhost
+milik laptop.
+NodeMCU harus mengakses server yang dapat dijangkau melalui jaringan.
+________________________________________
+17. Upload Firmware ke NodeMCU
+Menggunakan Arduino IDE.
+Board:
+NodeMCU 1.0 (ESP-12E Module)
+Klik:
+Upload
+hingga muncul:
+Done Uploading
+________________________________________
+18. Pengujian Serial Monitor
+Buka:
+Tools → Serial Monitor
+Baudrate:
+115200
+Jika berhasil biasanya muncul:
+WiFi Connected
+kemudian:
+HTTP 200
+dan:
+Heartbeat Success
+Artinya NodeMCU berhasil terhubung ke REST API pada VPS.

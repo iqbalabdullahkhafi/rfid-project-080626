@@ -1,0 +1,9 @@
+DirectoryIndex index.php index.html
+
+<IfModule mod_rewrite.c>
+RewriteEngine On
+
+RewriteRule ^(index|logs|settings)\.html$ $1.php [R=302,L]
+RewriteRule ^access_log\.php$ logs.php [R=302,L]
+
+</IfModule>

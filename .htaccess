@@ -1,0 +1,7 @@
+DirectoryIndex public/index.php
+
+<IfModule mod_rewrite.c>
+RewriteEngine On
+RewriteRule ^(app|config|database|firmware)/ - [F,L]
+RewriteRule ^api/config\.php$ - [F,L]
+</IfModule>

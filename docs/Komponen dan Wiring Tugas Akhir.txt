@@ -1,0 +1,74 @@
+Komponen yang Digunakan
+Pada pembuatan sistem keamanan akses pintu berbasis RFID ini digunakan beberapa komponen utama, yaitu:
+No	Komponen	Fungsi
+1	NodeMCU ESP8266	Mikrokontroler utama yang mengendalikan seluruh sistem.
+2	RFID RC522	Membaca UID kartu RFID sebagai identitas pengguna.
+3	LCD I2C 16x2	Menampilkan informasi dan status akses pengguna.
+4	Relay Module 1 Channel	Saklar elektronik untuk mengendalikan solenoid.
+5	Solenoid Door Lock	Aktuator untuk membuka dan mengunci pintu.
+6	LM2596 Step Down Converter	Menurunkan tegangan adaptor 12V menjadi tegangan yang sesuai untuk NodeMCU.
+7	Dioda Flyback 1N4007	Melindungi rangkaian dari tegangan balik solenoid.
+8	Adaptor 12V DC	Sumber daya utama sistem.
+________________________________________
+Hubungan Antar Komponen
+1. NodeMCU ESP8266 dan RFID RC522
+RFID RC522 dihubungkan ke NodeMCU menggunakan komunikasi SPI (Serial Peripheral Interface). Melalui koneksi ini, RFID RC522 dapat mengirimkan UID kartu yang dibaca kepada NodeMCU untuk diproses lebih lanjut.
+Pin yang digunakan:
+•	SDA → D8 
+•	SCK → D5 
+•	MOSI → D7 
+•	MISO → D6 
+•	RST → D4 
+•	VCC → 3.3V 
+•	GND → GND 
+________________________________________
+2. NodeMCU ESP8266 dan LCD I2C 16x2
+LCD I2C digunakan sebagai media tampilan sistem. Komunikasi antara LCD dan NodeMCU menggunakan protokol I2C sehingga hanya memerlukan dua jalur komunikasi.
+Pin yang digunakan:
+•	SDA → D2 
+•	SCL → D1 
+•	VCC → 3.3V 
+•	GND → GND 
+________________________________________
+3. NodeMCU ESP8266 dan Relay Module
+Relay digunakan sebagai penghubung antara NodeMCU dan solenoid door lock. NodeMCU mengirimkan sinyal kontrol melalui pin D3 untuk mengaktifkan atau menonaktifkan relay.
+Pin yang digunakan:
+•	IN → D3 
+•	VCC → 3.3V 
+•	GND → GND 
+________________________________________
+4. Adaptor 12V, LM2596, dan NodeMCU
+Adaptor 12V berfungsi sebagai sumber daya utama sistem. Tegangan dari adaptor masuk ke LM2596 untuk diturunkan sebelum digunakan oleh NodeMCU.
+Koneksi input LM2596:
+•	IN+ → 12V (+) adaptor 
+•	IN− → 12V (−) adaptor 
+Koneksi output LM2596:
+•	OUT+ → VIN NodeMCU 
+•	OUT− → GND NodeMCU 
+________________________________________
+5. Relay dan Solenoid Door Lock
+Solenoid door lock bekerja menggunakan tegangan 12V. Tegangan positif adaptor dihubungkan ke terminal COM relay, kemudian terminal NO relay dihubungkan ke terminal positif solenoid.
+Koneksi yang digunakan:
+•	COM Relay → 12V (+) adaptor 
+•	NO Relay → (+) Solenoid 
+•	(−) Solenoid → 12V (−) adaptor 
+Ketika relay aktif, tegangan 12V akan mengalir ke solenoid sehingga pintu dapat terbuka.
+________________________________________
+6. Dioda Flyback 1N4007
+Dioda flyback dipasang secara paralel pada terminal solenoid untuk melindungi relay dan NodeMCU dari tegangan balik yang dihasilkan saat solenoid dimatikan.
+Koneksi yang digunakan:
+•	Katoda (+) → Terminal positif solenoid dan NO relay 
+•	Anoda (−) → Terminal negatif solenoid dan negatif adaptor 12V 
+________________________________________
+7. Distribusi Daya Sistem
+Sumber daya sistem berasal dari satu adaptor 12V yang dibagi menjadi dua jalur.
+Jalur Positif 12V
+Dibagi menuju:
+•	COM relay 
+•	IN+ LM2596 
+Jalur Negatif 12V
+Dibagi menuju:
+•	Negatif solenoid 
+•	IN− LM2596 
+•	Anoda dioda flyback 
+Dengan konfigurasi tersebut, adaptor 12V dapat menyuplai daya ke solenoid door lock maupun NodeMCU secara bersamaan melalui LM2596
