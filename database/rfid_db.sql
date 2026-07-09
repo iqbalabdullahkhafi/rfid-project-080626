@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1:8111
--- Waktu pembuatan: 03 Jul 2026 pada 11.40
+-- Waktu pembuatan: 09 Jul 2026 pada 10.23
 -- Versi server: 10.4.32-MariaDB
 -- Versi PHP: 8.0.30
 
@@ -20,6 +20,201 @@ SET time_zone = "+00:00";
 --
 -- Database: `rfid_db`
 --
+
+-- --------------------------------------------------------
+
+--
+-- Struktur dari tabel `access_control`
+--
+
+CREATE TABLE `access_control` (
+  `id` int(11) NOT NULL,
+  `user_uid` varchar(64) NOT NULL,
+  `device_id` varchar(64) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data untuk tabel `access_control`
+--
+
+INSERT INTO `access_control` (`id`, `user_uid`, `device_id`) VALUES
+(121, '13E824D3', 'door_1'),
+(43, '66E84306', 'door_2'),
+(122, 'AD629121', 'door_2'),
+(125, 'AD6DD321', 'door_1'),
+(126, 'AD6DD321', 'door_2'),
+(120, 'BD9BD421', 'door_1');
+
+-- --------------------------------------------------------
+
+--
+-- Struktur dari tabel `app_settings`
+--
+
+CREATE TABLE `app_settings` (
+  `setting_key` varchar(64) NOT NULL,
+  `setting_value` text DEFAULT NULL,
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data untuk tabel `app_settings`
+--
+
+INSERT INTO `app_settings` (`setting_key`, `setting_value`, `updated_at`) VALUES
+('auto_refresh', '1', '2026-05-22 17:03:21'),
+('enable_logging', '0', '2026-06-23 11:16:21'),
+('login_attempt_limit', '5', '2026-05-03 04:33:39'),
+('mode', 'hybrid', '2026-07-02 14:45:01'),
+('refresh_interval', '15', '2026-05-02 14:06:22'),
+('session_timeout', '60', '2026-05-03 04:33:30'),
+('system_name', 'Smart Door System', '2026-05-23 09:58:15'),
+('timezone', 'Asia/Jakarta', '2026-05-03 04:49:39');
+
+-- --------------------------------------------------------
+
+--
+-- Struktur dari tabel `commands`
+--
+
+CREATE TABLE `commands` (
+  `id` int(11) NOT NULL,
+  `device_id` varchar(64) NOT NULL,
+  `command` varchar(32) NOT NULL,
+  `payload` text DEFAULT NULL,
+  `created_at` datetime NOT NULL DEFAULT current_timestamp(),
+  `consumed_at` datetime DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data untuk tabel `commands`
+--
+
+INSERT INTO `commands` (`id`, `device_id`, `command`, `payload`, `created_at`, `consumed_at`) VALUES
+(1, 'pintu_1', 'OPEN', NULL, '2026-04-22 00:51:12', '2026-04-22 00:51:12'),
+(2, 'pintu_1', 'OPEN', NULL, '2026-04-22 00:52:31', '2026-04-22 00:52:32'),
+(3, 'pintu_1', 'OPEN', NULL, '2026-04-22 00:53:55', '2026-04-22 00:53:55'),
+(4, 'pintu_1', 'OPEN', NULL, '2026-04-22 00:55:39', '2026-04-22 00:55:39'),
+(5, 'pintu_1', 'OPEN', NULL, '2026-04-22 00:55:46', '2026-04-22 00:55:47'),
+(6, 'pintu_1', 'OPEN', NULL, '2026-04-22 00:57:33', '2026-04-22 00:57:34'),
+(134, 'door_1', 'OPEN', NULL, '2026-04-24 21:47:38', '2026-04-24 21:47:39'),
+(135, 'door_1', 'OPEN', NULL, '2026-04-24 21:50:12', '2026-04-24 21:50:12'),
+(137, 'door_1', 'OPEN', NULL, '2026-04-24 21:53:26', '2026-04-24 21:53:27'),
+(138, 'door_1', 'OPEN', NULL, '2026-04-24 23:40:14', '2026-04-24 23:40:14'),
+(139, 'door_1', 'OPEN', NULL, '2026-04-25 00:27:37', '2026-04-25 00:27:38'),
+(140, 'door_1', 'OPEN', NULL, '2026-04-25 00:28:26', '2026-04-25 00:28:26'),
+(141, 'door_1', 'OPEN', NULL, '2026-04-25 00:29:04', '2026-04-25 00:29:04'),
+(142, 'door_1', 'OPEN', NULL, '2026-04-25 00:55:03', '2026-04-25 00:55:03'),
+(143, 'door_1', 'OPEN', NULL, '2026-04-25 00:55:11', '2026-04-25 00:55:12'),
+(144, 'door_1', 'OPEN', NULL, '2026-04-25 00:55:22', '2026-04-25 00:55:23'),
+(145, 'door_1', 'OPEN', NULL, '2026-04-25 01:32:41', '2026-04-25 01:32:41'),
+(146, 'door_1', 'OPEN', NULL, '2026-04-25 01:46:52', '2026-04-25 01:46:52'),
+(147, 'door_1', 'OPEN', NULL, '2026-04-25 01:49:59', '2026-04-25 01:49:59'),
+(148, 'door_1', 'OPEN', NULL, '2026-04-25 01:50:10', '2026-04-25 01:50:11'),
+(149, 'door_1', 'OPEN', NULL, '2026-04-25 01:56:05', '2026-04-25 01:56:05'),
+(150, 'door_1', 'OPEN', NULL, '2026-04-25 01:57:04', '2026-04-25 01:57:05'),
+(212, 'door_1', 'OPEN', NULL, '2026-05-01 20:20:11', '2026-05-01 20:20:11'),
+(213, 'door_1', 'OPEN', NULL, '2026-05-01 20:21:23', '2026-05-01 20:21:23'),
+(333, 'door_1', 'OPEN', NULL, '2026-05-06 08:25:10', '2026-05-06 08:25:11'),
+(334, 'door_1', 'OPEN', NULL, '2026-05-06 08:28:55', '2026-05-06 08:28:56'),
+(335, 'door_1', 'OPEN', NULL, '2026-05-06 08:30:21', '2026-05-06 08:30:22'),
+(350, 'door_1', 'OPEN', NULL, '2026-05-13 23:47:11', '2026-05-13 23:47:11'),
+(351, 'door_1', 'OPEN', NULL, '2026-05-13 23:47:37', '2026-05-13 23:47:38'),
+(386, 'door_1', 'OPEN', NULL, '2026-05-26 22:54:32', '2026-05-26 22:54:32'),
+(389, 'door_1', 'OPEN', NULL, '2026-05-26 23:01:38', '2026-05-26 23:01:39'),
+(392, 'door_1', 'OPEN', NULL, '2026-06-03 22:05:11', '2026-06-03 22:05:11'),
+(393, 'door_1', 'OPEN', NULL, '2026-06-03 22:05:21', '2026-06-03 22:05:22'),
+(394, 'door_1', 'OPEN', NULL, '2026-06-03 22:06:24', '2026-06-03 22:06:24'),
+(395, 'door_1', 'OPEN', NULL, '2026-06-03 22:06:33', '2026-06-03 22:06:33'),
+(396, 'door_1', 'OPEN', NULL, '2026-06-03 22:38:17', '2026-06-03 22:38:17'),
+(397, 'door_1', 'OPEN', NULL, '2026-06-06 22:46:25', '2026-06-06 22:46:25'),
+(398, 'door_1', 'OPEN', NULL, '2026-06-06 22:46:34', '2026-06-06 22:46:34'),
+(399, 'door_1', 'OPEN', NULL, '2026-06-06 22:46:43', '2026-06-06 22:46:44'),
+(400, 'door_1', 'OPEN', NULL, '2026-06-06 22:57:58', '2026-06-06 22:57:58'),
+(401, 'door_1', 'OPEN', NULL, '2026-06-06 23:11:22', '2026-06-06 23:11:23'),
+(402, 'door_1', 'OPEN', NULL, '2026-06-06 23:46:47', '2026-06-06 23:46:47'),
+(403, 'door_1', 'OPEN', NULL, '2026-06-06 23:47:29', '2026-06-06 23:47:29'),
+(404, 'door_1', 'OPEN', NULL, '2026-06-06 23:49:43', '2026-06-06 23:49:44'),
+(405, 'door_1', 'OPEN', NULL, '2026-06-06 23:51:02', '2026-06-06 23:51:03'),
+(406, 'door_1', 'OPEN', NULL, '2026-06-07 01:19:31', '2026-06-07 01:19:32'),
+(407, 'door_1', 'OPEN', NULL, '2026-06-07 01:20:04', '2026-06-07 01:20:04'),
+(408, 'door_1', 'OPEN', NULL, '2026-06-07 01:20:46', '2026-06-07 01:20:46'),
+(409, 'door_1', 'OPEN', NULL, '2026-06-07 01:23:37', '2026-06-07 01:23:38'),
+(410, 'door_1', 'OPEN', NULL, '2026-06-07 01:40:20', '2026-06-07 01:40:21'),
+(411, 'door_1', 'OPEN', NULL, '2026-06-07 01:40:32', '2026-06-07 01:40:33'),
+(412, 'door_1', 'OPEN', NULL, '2026-06-07 01:40:43', '2026-06-07 01:40:43'),
+(413, 'door_1', 'OPEN', NULL, '2026-06-07 01:40:54', '2026-06-07 01:40:54'),
+(414, 'door_1', 'OPEN', NULL, '2026-06-07 01:43:56', '2026-06-07 01:43:56'),
+(415, 'door_1', 'OPEN', NULL, '2026-06-18 12:13:15', '2026-06-18 12:13:16'),
+(416, 'door_1', 'OPEN', NULL, '2026-06-18 12:13:38', '2026-06-18 12:13:38'),
+(417, 'door_1', 'OPEN', NULL, '2026-06-18 12:43:43', '2026-06-18 12:43:43'),
+(418, 'door_1', 'OPEN', NULL, '2026-06-18 12:48:54', '2026-06-18 12:48:55'),
+(419, 'door_1', 'OPEN', NULL, '2026-06-18 12:55:46', '2026-06-18 12:55:46'),
+(420, 'door_1', 'OPEN', NULL, '2026-06-18 13:19:11', '2026-06-18 13:19:11'),
+(422, 'door_1', 'OPEN', NULL, '2026-06-18 13:53:18', '2026-06-18 13:53:18'),
+(423, 'door_1', 'OPEN', NULL, '2026-06-18 13:53:31', '2026-06-18 13:53:31'),
+(424, 'door_1', 'OPEN', NULL, '2026-06-18 13:53:40', '2026-06-18 13:53:40'),
+(425, 'door_1', 'OPEN', NULL, '2026-06-18 13:53:53', '2026-06-18 13:53:54'),
+(426, 'door_1', 'OPEN', NULL, '2026-06-18 13:54:14', '2026-06-18 13:54:14'),
+(428, 'door_1', 'OPEN', NULL, '2026-06-23 18:22:35', '2026-06-23 18:22:35'),
+(429, 'door_1', 'OPEN', NULL, '2026-06-23 18:22:41', '2026-06-23 18:22:42'),
+(430, 'door_1', 'OPEN', NULL, '2026-07-01 11:42:47', '2026-07-01 11:42:59'),
+(431, 'door_1', 'OPEN', NULL, '2026-07-01 11:43:05', '2026-07-01 11:43:36'),
+(432, 'door_1', 'OPEN', NULL, '2026-07-01 11:43:57', '2026-07-01 11:45:47'),
+(433, 'door_1', 'OPEN', NULL, '2026-07-01 12:07:16', '2026-07-01 14:13:08'),
+(434, 'door_1', 'OPEN', NULL, '2026-07-01 14:13:25', '2026-07-01 14:13:25'),
+(435, 'door_1', 'OPEN', NULL, '2026-07-01 14:14:11', '2026-07-01 14:14:11'),
+(436, 'door_1', 'OPEN', NULL, '2026-07-01 14:14:43', '2026-07-01 14:14:45'),
+(437, 'door_1', 'OPEN', NULL, '2026-07-01 14:19:55', '2026-07-01 14:19:57'),
+(438, 'door_1', 'OPEN', NULL, '2026-07-01 14:28:36', '2026-07-01 14:28:37'),
+(439, 'door_1', 'OPEN', NULL, '2026-07-01 16:16:16', '2026-07-01 16:16:35'),
+(440, 'door_1', 'OPEN', NULL, '2026-07-01 16:22:22', '2026-07-01 16:22:26'),
+(441, 'door_1', 'OPEN', NULL, '2026-07-01 17:17:35', '2026-07-01 17:17:37'),
+(442, 'door_1', 'OPEN', NULL, '2026-07-01 17:54:53', '2026-07-01 17:54:53'),
+(443, 'door_1', 'OPEN', NULL, '2026-07-01 20:24:32', '2026-07-01 20:24:35'),
+(444, 'door_1', 'OPEN', NULL, '2026-07-01 21:22:10', '2026-07-01 21:22:10'),
+(445, 'door_1', 'OPEN', NULL, '2026-07-01 21:54:58', '2026-07-01 21:54:59'),
+(446, 'door_1', 'OPEN', NULL, '2026-07-02 10:55:37', '2026-07-02 10:55:38'),
+(447, 'door_1', 'OPEN', NULL, '2026-07-02 11:43:01', '2026-07-02 11:43:03'),
+(448, 'door_1', 'OPEN', NULL, '2026-07-02 13:40:51', '2026-07-02 13:40:52'),
+(449, 'door_1', 'OPEN', NULL, '2026-07-02 16:23:14', '2026-07-02 16:23:16'),
+(450, 'door_1', 'OPEN', NULL, '2026-07-02 17:36:01', '2026-07-02 17:36:03'),
+(451, 'door_1', 'OPEN', NULL, '2026-07-02 17:36:19', '2026-07-02 17:36:22'),
+(452, 'door_1', 'OPEN', NULL, '2026-07-02 18:24:27', '2026-07-02 18:24:29'),
+(453, 'door_2', 'OPEN', NULL, '2026-07-02 18:28:50', '2026-07-02 18:28:53'),
+(454, 'door_2', 'OPEN', NULL, '2026-07-02 21:42:14', '2026-07-02 21:42:15'),
+(455, 'door_1', 'OPEN', NULL, '2026-07-06 11:16:33', '2026-07-06 11:16:35'),
+(456, 'door_1', 'OPEN', NULL, '2026-07-06 17:36:47', '2026-07-06 17:36:50'),
+(457, 'door_1', 'OPEN', NULL, '2026-07-06 17:37:07', '2026-07-06 17:37:10'),
+(458, 'door_1', 'OPEN', NULL, '2026-07-06 17:37:35', '2026-07-06 17:37:40'),
+(459, 'door_1', 'OPEN', NULL, '2026-07-06 18:01:35', '2026-07-06 18:01:36'),
+(460, 'door_1', 'OPEN', NULL, '2026-07-09 10:15:40', '2026-07-09 10:15:44');
+
+-- --------------------------------------------------------
+
+--
+-- Struktur dari tabel `devices`
+--
+
+CREATE TABLE `devices` (
+  `device_id` varchar(64) NOT NULL,
+  `api_key` varchar(128) DEFAULT NULL,
+  `device_name` varchar(128) DEFAULT NULL,
+  `status` varchar(16) DEFAULT 'OFFLINE',
+  `name` varchar(128) DEFAULT NULL,
+  `last_seen` datetime NOT NULL DEFAULT current_timestamp(),
+  `last_ip` varchar(45) DEFAULT NULL,
+  `created_at` datetime NOT NULL DEFAULT current_timestamp(),
+  `updated_at` datetime NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data untuk tabel `devices`
+--
+
+INSERT INTO `devices` (`device_id`, `api_key`, `device_name`, `status`, `name`, `last_seen`, `last_ip`, `created_at`, `updated_at`) VALUES
+('door_1', '3995b8c904f162ec234131664e06d61b', 'RUANG NOC', 'ONLINE', 'RUANG NOC', '2026-07-09 15:23:42', '10.200.243.143', '2026-04-24 21:45:56', '2026-07-09 15:23:42'),
+('door_2', 'e5360f4840b364080adf14248f57992d', 'RUANG MEETING', 'ONLINE', 'RUANG MEETING', '2026-07-03 11:09:39', '10.200.243.143', '2026-06-29 11:06:02', '2026-07-03 11:09:39');
 
 -- --------------------------------------------------------
 
@@ -932,11 +1127,81 @@ INSERT INTO `logs` (`id`, `device_id`, `device_name`, `name`, `uid`, `status`, `
 (889, 'door_2', 'RUANG MEETING', 'Azis', 'AD6DD321', 'GRANTED', 'rfid', '2026-07-02 18:29:27'),
 (890, 'door_2', 'RUANG MEETING', 'Putri', 'AD629121', 'GRANTED', 'rfid', '2026-07-02 18:29:46'),
 (891, 'door_2', 'RUANG MEETING', 'Daniel', 'BD9BD421', 'DENIED', 'rfid', '2026-07-02 18:30:24'),
-(892, 'door_2', 'RUANG MEETING', 'admin', 'WEB', 'GRANTED', 'web', '2026-07-02 21:42:14');
+(892, 'door_2', 'RUANG MEETING', 'admin', 'WEB', 'GRANTED', 'web', '2026-07-02 21:42:14'),
+(893, 'door_1', 'RUANG NOC', 'admin', 'WEB', 'GRANTED', 'web', '2026-07-06 11:16:33'),
+(894, 'door_1', 'RUANG NOC', 'Daniel', 'BD9BD421', 'GRANTED', 'rfid', '2026-07-06 11:17:53'),
+(895, 'door_1', 'RUANG NOC', 'Daniel', 'BD9BD421', 'GRANTED', 'rfid', '2026-07-06 11:18:06'),
+(896, 'door_1', 'RUANG NOC', 'Putri', 'AD629121', 'DENIED', 'rfid', '2026-07-06 11:18:39'),
+(897, 'door_1', 'RUANG NOC', 'Daniel', 'BD9BD421', 'GRANTED', 'rfid', '2026-07-06 11:24:09'),
+(898, 'door_1', 'RUANG NOC', 'admin', 'WEB', 'GRANTED', 'web', '2026-07-06 17:36:47'),
+(899, 'door_1', 'RUANG NOC', 'admin', 'WEB', 'GRANTED', 'web', '2026-07-06 17:37:07'),
+(900, 'door_1', 'RUANG NOC', 'admin', 'WEB', 'GRANTED', 'web', '2026-07-06 17:37:35'),
+(901, 'door_1', 'RUANG NOC', 'admin', 'WEB', 'GRANTED', 'web', '2026-07-06 18:01:35'),
+(902, 'door_1', 'RUANG NOC', 'Daniel', 'BD9BD421', 'GRANTED', 'rfid', '2026-07-06 18:02:04'),
+(903, 'door_1', 'RUANG NOC', 'Daniel', 'BD9BD421', 'GRANTED', 'rfid', '2026-07-06 18:02:20'),
+(909, 'door_1', 'RUANG NOC', 'Azis', 'AD6DD321', 'DENIED', 'rfid', '2026-07-09 15:13:32'),
+(910, 'door_1', 'RUANG NOC', 'Azis', 'AD6DD321', 'GRANTED', 'rfid', '2026-07-09 15:14:27'),
+(911, 'door_1', 'RUANG NOC', 'Azis', 'AD6DD321', 'GRANTED', 'rfid', '2026-07-09 15:23:20');
+
+-- --------------------------------------------------------
+
+--
+-- Struktur dari tabel `users`
+--
+
+CREATE TABLE `users` (
+  `id` int(11) NOT NULL,
+  `name` varchar(128) NOT NULL,
+  `uid` varchar(64) DEFAULT NULL,
+  `username` varchar(64) DEFAULT NULL,
+  `password` varchar(255) DEFAULT NULL,
+  `status` varchar(16) NOT NULL DEFAULT 'Active',
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data untuk tabel `users`
+--
+
+INSERT INTO `users` (`id`, `name`, `uid`, `username`, `password`, `status`, `created_at`) VALUES
+(4, 'Daniel', 'BD9BD421', NULL, NULL, 'Active', '2026-04-29 13:55:07'),
+(5, 'Putri', 'AD629121', NULL, NULL, 'Active', '2026-04-29 13:55:26'),
+(8, 'Ardi', '13E824D3', NULL, NULL, 'Active', '2026-04-29 17:06:15'),
+(10, 'admin', NULL, 'admin', '$2y$10$fp2gsZqu7Oa8qfYoO1ORiePQvbHUpwLLD8MfbDQl7vwSgP204PV0C', 'Active', '2026-04-30 11:18:11'),
+(14, 'Azis', 'AD6DD321', 'azis', '$2y$10$AZQ75j0KMzhQumqg1U8jIuko/b1QC8rU/G1aPwVLzgVsy19.rjpny', 'Active', '2026-04-30 11:25:53'),
+(2825, 'Apip', NULL, 'apip', '$2y$10$5RSR7GS2N5487Z0I/q0d9OJVgiNJ3BR8DVPIAbmuqxFs4.BcHdWqq', 'Active', '2026-07-02 03:16:41');
 
 --
 -- Indexes for dumped tables
 --
+
+--
+-- Indeks untuk tabel `access_control`
+--
+ALTER TABLE `access_control`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `uniq_user_device` (`user_uid`,`device_id`),
+  ADD KEY `idx_user_uid` (`user_uid`),
+  ADD KEY `idx_device_id` (`device_id`);
+
+--
+-- Indeks untuk tabel `app_settings`
+--
+ALTER TABLE `app_settings`
+  ADD PRIMARY KEY (`setting_key`);
+
+--
+-- Indeks untuk tabel `commands`
+--
+ALTER TABLE `commands`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_device_pending` (`device_id`,`consumed_at`,`created_at`);
+
+--
+-- Indeks untuk tabel `devices`
+--
+ALTER TABLE `devices`
+  ADD PRIMARY KEY (`device_id`);
 
 --
 -- Indeks untuk tabel `logs`
@@ -946,14 +1211,40 @@ ALTER TABLE `logs`
   ADD KEY `idx_logs_device_time` (`device_id`,`time`);
 
 --
+-- Indeks untuk tabel `users`
+--
+ALTER TABLE `users`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `uniq_uid` (`uid`),
+  ADD UNIQUE KEY `uniq_username` (`username`);
+
+--
 -- AUTO_INCREMENT untuk tabel yang dibuang
 --
+
+--
+-- AUTO_INCREMENT untuk tabel `access_control`
+--
+ALTER TABLE `access_control`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=127;
+
+--
+-- AUTO_INCREMENT untuk tabel `commands`
+--
+ALTER TABLE `commands`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=461;
 
 --
 -- AUTO_INCREMENT untuk tabel `logs`
 --
 ALTER TABLE `logs`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=893;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=912;
+
+--
+-- AUTO_INCREMENT untuk tabel `users`
+--
+ALTER TABLE `users`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2829;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

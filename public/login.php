@@ -27,13 +27,14 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
         $_SESSION['login_error'] = 'Username dan password wajib diisi.';
         redirect_to('login.php');
     }
-
+    
     $stmt = db()->prepare(
         "SELECT name, username, password
-         FROM users
-         WHERE username = ? AND status = 'Active'
-         LIMIT 1"
+        FROM users
+        WHERE username = ?
+        LIMIT 1"
     );
+    
     $stmt->bind_param('s', $username);
     $stmt->execute();
     $user = $stmt->get_result()->fetch_assoc();
