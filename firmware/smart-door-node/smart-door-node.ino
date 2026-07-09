@@ -88,12 +88,19 @@ void showTemporaryMessage(const String& line1, const String& line2, uint32_t dur
 
 void connectWifi() {
   if (WiFi.status() == WL_CONNECTED) return;
+  Serial.println("[WiFi] Connecting...");
   WiFi.mode(WIFI_STA);
   WiFi.begin(WIFI_SSID, WIFI_PASS);
   showPermanentStatus("WiFi", "Connecting...");
   uint32_t start = millis();
   while (WiFi.status() != WL_CONNECTED && millis() - start < 12000) { delay(250); }
-  showPermanentStatus(WiFi.status() == WL_CONNECTED ? "WiFi Online" : "WiFi Offline", DEVICE_NAME);
+  if (WiFi.status() == WL_CONNECTED) {
+    Serial.println("[WiFi] Connected");
+    Serial.println("[WiFi] IP Address : " + WiFi.localIP().toString());
+    showPermanentStatus("WiFi Online", DEVICE_NAME);
+  } else {
+    showPermanentStatus("WiFi Offline", DEVICE_NAME);
+  }
 }
 
 String uidHex() {
@@ -118,12 +125,14 @@ void openDoor() {
   doorOpen = true;
   doorCloseAt = millis() + 5000;
   showTemporaryMessage("ACCESS GRANTED", "Door Unlocked", 2000);
+  Serial.println("[Door] Unlock");
 }
 
 void closeDoorIfNeeded() {
   if (doorOpen && millis() >= doorCloseAt) {
     digitalWrite(RELAY_PIN, HIGH);
     doorOpen = false;
+    Serial.println("[Door] Lock");
   }
 }
 
@@ -138,6 +147,16 @@ void pollMode() {
     String upper = body;
     upper.toUpperCase();
     systemMode = upper.indexOf("HYBRID") >= 0 ? "hybrid" : "online";
+    if (systemMode == "hybrid") {
+      Serial.println("[Mode] HYBRID");
+    } else {
+      Serial.println("[Mode] ONLINE");
+    }
+  } else if (code < 0) {
+    Serial.println("[Mode] Server unreachable");
+    String tempMode = systemMode;
+    tempMode.toUpperCase();
+    Serial.println("[Mode] Using previous mode : " + tempMode);
   }
 }
 
@@ -147,25 +166,29 @@ void pollCommand() {
   String body = httpGet(url);
   String upper = body;
   upper.toUpperCase();
-  if (upper.indexOf("\"COMMAND\":\"OPEN\"") >= 0) openDoor();
+  if (upper.indexOf("\"COMMAND\":\"OPEN\"") >= 0) {
+    Serial.println("[Command] OPEN received");
+    openDoor();
+  }
 }
 
 bool validateOnline(const String& uid, String& outDecision) {
   if (WiFi.status() != WL_CONNECTED) return false; // Server cannot be reached
+  Serial.println("[Access] Sending request...");
   String url = apiUrl("access.php") + "?device_id=" + encode(DEVICE_ID) + "&uid=" + encode(uid) + "&api_key=" + encode(API_KEY);
   int code = 0;
   String body = httpGet(url, &code);
   if (code < 200 || code >= 300) {
     return false; // Server did not respond with success
   }
-  String upper = body;
-  upper.toUpperCase();
-  if (upper.indexOf("\"DECISION\":\"GRANTED\"") >= 0) {
+  if (body.indexOf("\"DECISION\":\"GRANTED\"") >= 0) {
     outDecision = "GRANTED";
+    Serial.println("[Access] Status : GRANTED");
     return true; // Server responded
   }
-  if (upper.indexOf("\"DECISION\":\"DENIED\"") >= 0) {
+  if (body.indexOf("\"DECISION\":\"DENIED\"") >= 0) {
     outDecision = "DENIED";
+    Serial.println("[Access] Status : DENIED");
     return true; // Server responded
   }
   return false; // Server response was unclear
@@ -174,6 +197,8 @@ bool validateOnline(const String& uid, String& outDecision) {
 void scanCard() {
   if (!rfid.PICC_IsNewCardPresent() || !rfid.PICC_ReadCardSerial()) return;
   String uid = uidHex();
+  Serial.println("\n[RFID] Card detected");
+  Serial.println("[RFID] UID : " + uid);
   bool granted = false;
   String decision = "";
   bool serverResponded = validateOnline(uid, decision);
@@ -192,6 +217,13 @@ void scanCard() {
 
 void setup() {
   Serial.begin(115200);
+  Serial.println("\n\n====================================");
+  Serial.println("     SMART DOOR SECURITY SYSTEM");
+  Serial.println("====================================");
+  Serial.println("Device ID   : " + String(DEVICE_ID));
+  Serial.println("Device Name : " + String(DEVICE_NAME));
+  Serial.println("Initializing system...");
+
   pinMode(RELAY_PIN, OUTPUT);
   digitalWrite(RELAY_PIN, HIGH);
   Wire.begin(I2C_SDA, I2C_SCL);
