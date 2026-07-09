@@ -88,7 +88,15 @@ void showTemporaryMessage(const String& line1, const String& line2, uint32_t dur
 
 void connectWifi() {
   if (WiFi.status() == WL_CONNECTED) return;
-  Serial.println("[WiFi] Connecting...");
+
+  static bool firstConnection = true;
+  if (firstConnection) {
+    Serial.println("[WiFi] Connecting...");
+    firstConnection = false;
+  } else {
+    Serial.println("[WiFi] Connection lost. Reconnecting...");
+  }
+
   WiFi.mode(WIFI_STA);
   WiFi.begin(WIFI_SSID, WIFI_PASS);
   showPermanentStatus("WiFi", "Connecting...");
@@ -99,6 +107,7 @@ void connectWifi() {
     Serial.println("[WiFi] IP Address : " + WiFi.localIP().toString());
     showPermanentStatus("WiFi Online", DEVICE_NAME);
   } else {
+    Serial.println("[WiFi] Failed to connect.");
     showPermanentStatus("WiFi Offline", DEVICE_NAME);
   }
 }
@@ -120,12 +129,12 @@ bool localAllowed(const String& uid) {
   return false;
 }
 
-void openDoor() {
+void openDoor(const String& source) {
   digitalWrite(RELAY_PIN, LOW);
   doorOpen = true;
   doorCloseAt = millis() + 5000;
   showTemporaryMessage("ACCESS GRANTED", "Door Unlocked", 2000);
-  Serial.println("[Door] Unlock");
+  Serial.println("[Door] Unlock (" + source + ")");
 }
 
 void closeDoorIfNeeded() {
@@ -141,6 +150,21 @@ void pollMode() {
   String url = apiUrl("settings.php") + "?device_id=" + encode(DEVICE_ID) + "&api_key=" + encode(API_KEY);
   int code = 0;
   String body = httpGet(url, &code);
+
+  if (code < 0) {
+    Serial.println("[HTTP] Failed to connect to server.");
+    String tempMode = systemMode;
+    tempMode.toUpperCase();
+    Serial.println("[Mode] Server unreachable. Using previous mode : " + tempMode);
+    return;
+  }
+
+  if (code >= 200 && code < 300) {
+    Serial.println("[HTTP] Response   : " + String(code) + " OK");
+  } else {
+    Serial.println("[HTTP] Response   : " + String(code));
+  }
+
   // Hanya perbarui mode jika server memberikan respons yang valid (HTTP 2xx).
   // Jika server tidak dapat dijangkau, pertahankan mode terakhir yang diketahui.
   if (code >= 200 && code < 300 && body.length() > 0) {
@@ -152,43 +176,81 @@ void pollMode() {
     } else {
       Serial.println("[Mode] ONLINE");
     }
-  } else if (code < 0) {
-    Serial.println("[Mode] Server unreachable");
+  } else {
     String tempMode = systemMode;
     tempMode.toUpperCase();
-    Serial.println("[Mode] Using previous mode : " + tempMode);
+    Serial.println("[Mode] Server error. Using previous mode : " + tempMode);
   }
 }
 
 void pollCommand() {
   if (WiFi.status() != WL_CONNECTED) return;
   String url = apiUrl("commands.php") + "?device_id=" + encode(DEVICE_ID) + "&api_key=" + encode(API_KEY);
-  String body = httpGet(url);
-  String upper = body;
-  upper.toUpperCase();
-  if (upper.indexOf("\"COMMAND\":\"OPEN\"") >= 0) {
-    Serial.println("[Command] OPEN received");
-    openDoor();
+  int code = 0;
+  String body = httpGet(url, &code);
+
+  if (code < 0) {
+    Serial.println("[HTTP] Failed to connect to server.");
+    Serial.println("[Command] Polling failed.");
+    return;
+  }
+
+  if (code >= 200 && code < 300) {
+    Serial.println("[HTTP] Response   : " + String(code) + " OK");
+  } else {
+    Serial.println("[HTTP] Response   : " + String(code));
+  }
+
+  if (code >= 200 && code < 300) {
+    String upper = body;
+    upper.toUpperCase();
+    if (upper.indexOf("\"COMMAND\":\"OPEN\"") >= 0) {
+      Serial.println("[Command] OPEN received");
+      openDoor("Remote");
+    } else {
+      Serial.println("[Command] No command");
+    }
   }
 }
 
-bool validateOnline(const String& uid, String& outDecision) {
+bool validateOnline(const String& uid, String& outDecision, String& outUserName) {
   if (WiFi.status() != WL_CONNECTED) return false; // Server cannot be reached
   Serial.println("[Access] Sending request...");
   String url = apiUrl("access.php") + "?device_id=" + encode(DEVICE_ID) + "&uid=" + encode(uid) + "&api_key=" + encode(API_KEY);
   int code = 0;
   String body = httpGet(url, &code);
+
+  if (code < 0) {
+    Serial.println("[HTTP] Failed to connect to server.");
+    return false;
+  }
+
+  if (code >= 200 && code < 300) {
+    Serial.println("[HTTP] Response   : " + String(code) + " OK");
+  } else {
+    Serial.println("[HTTP] Response   : " + String(code));
+  }
+
   if (code < 200 || code >= 300) {
     return false; // Server did not respond with success
   }
-  if (body.indexOf("\"DECISION\":\"GRANTED\"") >= 0) {
+
+  if (body.indexOf("\"decision\":\"GRANTED\"") > 0) {
     outDecision = "GRANTED";
-    Serial.println("[Access] Status : GRANTED");
+    Serial.println("[Access] Status   : GRANTED");
+    int nameStart = body.indexOf("\"name\":\"") + 8;
+    if (nameStart > 7) {
+      int nameEnd = body.indexOf("\"", nameStart);
+      if (nameEnd > nameStart) {
+        outUserName = body.substring(nameStart, nameEnd);
+        Serial.println("[Access] User     : " + outUserName);
+      }
+    }
     return true; // Server responded
   }
-  if (body.indexOf("\"DECISION\":\"DENIED\"") >= 0) {
+  if (body.indexOf("\"decision\":\"DENIED\"") > 0) {
     outDecision = "DENIED";
-    Serial.println("[Access] Status : DENIED");
+    Serial.println("[Access] Status   : DENIED");
     return true; // Server responded
   }
   return false; // Server response was unclear
@@ -198,17 +260,32 @@ void scanCard() {
   if (!rfid.PICC_IsNewCardPresent() || !rfid.PICC_ReadCardSerial()) return;
   String uid = uidHex();
   Serial.println("\n[RFID] Card detected");
-  Serial.println("[RFID] UID : " + uid);
+  Serial.println("[RFID] UID        : " + uid);
   bool granted = false;
   String decision = "";
-  bool serverResponded = validateOnline(uid, decision);
+  String userName = "";
+  bool serverResponded = validateOnline(uid, decision, userName);
   if (serverResponded) {
     granted = (decision == "GRANTED");
-  } else if (systemMode == "hybrid") {
-    granted = localAllowed(uid); // Fallback to local list only if server did not respond
+  } else {
+    String tempMode = systemMode;
+    tempMode.toUpperCase();
+    Serial.println("[Access] Mode     : " + tempMode);
+    if (systemMode == "hybrid") {
+      Serial.println("[Access] Checking local UID list...");
+      granted = localAllowed(uid);
+      if (granted) {
+        Serial.println("[Access] Status   : GRANTED (Local)");
+      } else {
+        Serial.println("[Access] Status   : DENIED (Local)");
+      }
+    } else {
+      granted = false;
+      Serial.println("[Access] Status   : DENIED");
+    }
   }
 
-  if (granted) openDoor();
+  if (granted) openDoor("RFID");
   else showTemporaryMessage("ACCESS DENIED", uid, 5000);
 
   rfid.PICC_HaltA();
@@ -226,11 +303,22 @@ void setup() {
 
   pinMode(RELAY_PIN, OUTPUT);
   digitalWrite(RELAY_PIN, HIGH);
+  Serial.println("[Init] Relay PIN  : OK");
+
   Wire.begin(I2C_SDA, I2C_SCL);
+  // The begin() method for this library version returns void, so we call it directly.
   lcd.begin(16, 2);
   lcd.setBacklight(255);
+  Serial.println("[Init] LCD        : OK");
+
   SPI.begin();
+  // The PCD_Init() method also returns void. We call it and log success.
   rfid.PCD_Init();
+  Serial.println("[Init] RFID RC522 : OK");
+
+  Serial.println("System ready.");
+  Serial.println("====================================");
+
   showPermanentStatus("Smart Door", "Starting...");
   connectWifi();
   pollMode();
