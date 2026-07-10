@@ -1,9 +1,28 @@
-document.querySelectorAll("[data-confirm], [data-confirm-form]").forEach((element) => {
-  const eventName = element.tagName === "FORM" ? "submit" : "click";
-  element.addEventListener(eventName, (event) => {
-    const message = element.dataset.confirm || element.dataset.confirmForm;
-    if (message && !window.confirm(message)) event.preventDefault();
-  });
+// Use event delegation to handle confirmation dialogs for static and dynamic elements.
+document.addEventListener("click", (event) => {
+  const element = event.target.closest("[data-confirm], [data-confirm-form]");
+  if (!element) return;
+
+  // If the element is a form, let the 'submit' event listener handle it.
+  // This 'click' listener is for non-form elements like <a> or <button>.
+  if (element.tagName === "FORM") return;
+
+  const message = element.dataset.confirm || element.dataset.confirmForm;
+  if (message && !window.confirm(message)) {
+    // Prevents the default action of the click, e.g., navigating a link or submitting a form via a button.
+    event.preventDefault();
+  }
+});
+
+document.addEventListener("submit", (event) => {
+  const form = event.target;
+  // Check if the form itself has the confirmation attribute.
+  if (form.matches("[data-confirm-form]")) {
+    const message = form.dataset.confirmForm;
+    if (message && !window.confirm(message)) {
+      event.preventDefault();
+    }
+  }
 });
 
 document.querySelectorAll("[data-modal]").forEach((button) => {
@@ -50,11 +69,9 @@ document.querySelectorAll("[data-edit-door]").forEach((button) => {
     if (!document.getElementById("deleteDoorBtn")) {
       const deleteBtn = document.createElement("button");
       deleteBtn.type = "submit";
-      deleteBtn.name = "action";
-      deleteBtn.value = "delete_door";
       deleteBtn.className = "btn danger";
       deleteBtn.id = "deleteDoorBtn";
-      deleteBtn.form = "deleteDoorForm";
+      deleteBtn.setAttribute("form", "deleteDoorForm");
       deleteBtn.dataset.confirmForm = "Hapus perangkat ini? Semua data terkait akan hilang.";
       deleteBtn.textContent = "Delete";
       modal.querySelector(".modal-actions").prepend(deleteBtn);
@@ -89,11 +106,9 @@ document.querySelectorAll("[data-edit-user]").forEach((button) => {
     if (!modal.querySelector("#deleteUserBtn")) {
       const deleteBtn = document.createElement("button");
       deleteBtn.type = "submit";
-      deleteBtn.name = "action";
-      deleteBtn.value = "delete_user";
       deleteBtn.className = "btn danger";
       deleteBtn.id = "deleteUserBtn";
-      deleteBtn.form = "deleteUserForm";
+      deleteBtn.setAttribute("form", "deleteUserForm");
       deleteBtn.dataset.confirmForm = "Hapus pengguna ini?";
       deleteBtn.textContent = "Delete";
       modal.querySelector(".modal-actions").prepend(deleteBtn);

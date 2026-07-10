@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1:8111
--- Waktu pembuatan: 09 Jul 2026 pada 10.23
+-- Waktu pembuatan: 10 Jul 2026 pada 04.55
 -- Versi server: 10.4.32-MariaDB
 -- Versi PHP: 8.0.30
 
@@ -38,7 +38,6 @@ CREATE TABLE `access_control` (
 --
 
 INSERT INTO `access_control` (`id`, `user_uid`, `device_id`) VALUES
-(121, '13E824D3', 'door_1'),
 (43, '66E84306', 'door_2'),
 (122, 'AD629121', 'door_2'),
 (125, 'AD6DD321', 'door_1'),
@@ -65,7 +64,7 @@ INSERT INTO `app_settings` (`setting_key`, `setting_value`, `updated_at`) VALUES
 ('auto_refresh', '1', '2026-05-22 17:03:21'),
 ('enable_logging', '0', '2026-06-23 11:16:21'),
 ('login_attempt_limit', '5', '2026-05-03 04:33:39'),
-('mode', 'hybrid', '2026-07-02 14:45:01'),
+('mode', 'hybrid', '2026-07-09 14:56:01'),
 ('refresh_interval', '15', '2026-05-02 14:06:22'),
 ('session_timeout', '60', '2026-05-03 04:33:30'),
 ('system_name', 'Smart Door System', '2026-05-23 09:58:15'),
@@ -188,7 +187,10 @@ INSERT INTO `commands` (`id`, `device_id`, `command`, `payload`, `created_at`, `
 (457, 'door_1', 'OPEN', NULL, '2026-07-06 17:37:07', '2026-07-06 17:37:10'),
 (458, 'door_1', 'OPEN', NULL, '2026-07-06 17:37:35', '2026-07-06 17:37:40'),
 (459, 'door_1', 'OPEN', NULL, '2026-07-06 18:01:35', '2026-07-06 18:01:36'),
-(460, 'door_1', 'OPEN', NULL, '2026-07-09 10:15:40', '2026-07-09 10:15:44');
+(460, 'door_1', 'OPEN', NULL, '2026-07-09 10:15:40', '2026-07-09 10:15:44'),
+(461, 'door_1', 'OPEN', NULL, '2026-07-09 20:47:26', '2026-07-09 20:47:28'),
+(462, 'door_1', 'OPEN', NULL, '2026-07-09 21:56:57', '2026-07-09 21:56:57'),
+(463, 'door_1', 'OPEN', NULL, '2026-07-09 23:12:50', '2026-07-09 23:12:52');
 
 -- --------------------------------------------------------
 
@@ -213,7 +215,7 @@ CREATE TABLE `devices` (
 --
 
 INSERT INTO `devices` (`device_id`, `api_key`, `device_name`, `status`, `name`, `last_seen`, `last_ip`, `created_at`, `updated_at`) VALUES
-('door_1', '3995b8c904f162ec234131664e06d61b', 'RUANG NOC', 'ONLINE', 'RUANG NOC', '2026-07-09 15:23:42', '10.200.243.143', '2026-04-24 21:45:56', '2026-07-09 15:23:42'),
+('door_1', '3995b8c904f162ec234131664e06d61b', 'RUANG NOC', 'ONLINE', 'RUANG NOC', '2026-07-10 00:02:57', '10.200.243.143', '2026-04-24 21:45:56', '2026-07-10 00:02:57'),
 ('door_2', 'e5360f4840b364080adf14248f57992d', 'RUANG MEETING', 'ONLINE', 'RUANG MEETING', '2026-07-03 11:09:39', '10.200.243.143', '2026-06-29 11:06:02', '2026-07-03 11:09:39');
 
 -- --------------------------------------------------------
@@ -1141,7 +1143,17 @@ INSERT INTO `logs` (`id`, `device_id`, `device_name`, `name`, `uid`, `status`, `
 (903, 'door_1', 'RUANG NOC', 'Daniel', 'BD9BD421', 'GRANTED', 'rfid', '2026-07-06 18:02:20'),
 (909, 'door_1', 'RUANG NOC', 'Azis', 'AD6DD321', 'DENIED', 'rfid', '2026-07-09 15:13:32'),
 (910, 'door_1', 'RUANG NOC', 'Azis', 'AD6DD321', 'GRANTED', 'rfid', '2026-07-09 15:14:27'),
-(911, 'door_1', 'RUANG NOC', 'Azis', 'AD6DD321', 'GRANTED', 'rfid', '2026-07-09 15:23:20');
+(911, 'door_1', 'RUANG NOC', 'Azis', 'AD6DD321', 'GRANTED', 'rfid', '2026-07-09 15:23:20'),
+(912, 'door_1', 'RUANG NOC', 'admin', 'WEB', 'GRANTED', 'web', '2026-07-09 20:47:26'),
+(913, 'door_1', 'RUANG NOC', 'Azis', 'AD6DD321', 'GRANTED', 'rfid', '2026-07-09 20:48:36'),
+(914, 'door_1', 'RUANG NOC', 'Azis', 'AD6DD321', 'GRANTED', 'rfid', '2026-07-09 20:49:00'),
+(915, 'door_1', 'RUANG NOC', 'Azis', 'AD6DD321', 'GRANTED', 'rfid', '2026-07-09 21:17:57'),
+(916, 'door_1', 'RUANG NOC', 'Azis', 'AD6DD321', 'GRANTED', 'rfid', '2026-07-09 21:56:22'),
+(917, 'door_1', 'RUANG NOC', 'admin', 'WEB', 'GRANTED', 'web', '2026-07-09 21:56:57'),
+(918, 'door_1', 'RUANG NOC', 'Azis', 'AD6DD321', 'GRANTED', 'rfid', '2026-07-09 23:11:56'),
+(919, 'door_1', 'RUANG NOC', NULL, '66E84306', 'DENIED', 'rfid', '2026-07-09 23:12:30'),
+(920, 'door_1', 'RUANG NOC', 'admin', 'WEB', 'GRANTED', 'web', '2026-07-09 23:12:50'),
+(921, 'door_1', 'RUANG NOC', 'Ardi', '13E824D3', 'GRANTED', 'rfid', '2026-07-09 23:13:49');
 
 -- --------------------------------------------------------
 
@@ -1232,13 +1244,13 @@ ALTER TABLE `access_control`
 -- AUTO_INCREMENT untuk tabel `commands`
 --
 ALTER TABLE `commands`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=461;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=464;
 
 --
 -- AUTO_INCREMENT untuk tabel `logs`
 --
 ALTER TABLE `logs`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=912;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=922;
 
 --
 -- AUTO_INCREMENT untuk tabel `users`

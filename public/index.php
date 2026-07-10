@@ -142,9 +142,15 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
                 $deleteAccess->execute();
             }
 
-            $deleteUser = db()->prepare("DELETE FROM users WHERE id = ? AND username <> 'admin'");
+            $deleteUser = db()->prepare("DELETE FROM users WHERE id = ? AND (username IS NULL OR username <> 'admin')");
             $deleteUser->bind_param('i', $id);
             $deleteUser->execute();
+
+            if ($deleteUser->affected_rows === 0) {
+                db()->rollback();
+                throw new RuntimeException('Pengguna tidak ditemukan atau tidak dapat dihapus.');
+            }
+
             db()->commit();
             flash('success', 'Pengguna berhasil dihapus.');
         }
@@ -390,7 +396,11 @@ foreach ($devices as $device) {
       <button class="btn primary">Simpan</button>
     </div>
   </form>
-  <form method="post" id="deleteDoorForm" hidden><input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>"><input type="hidden" name="device_id" id="deleteDoorId"></form>
+  <form method="post" id="deleteDoorForm" hidden>
+    <input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>">
+    <input type="hidden" name="action" value="delete_door">
+    <input type="hidden" name="device_id" id="deleteDoorId">
+  </form>
 </div>
 
 <div class="modal" id="userModal">
@@ -427,7 +437,11 @@ foreach ($devices as $device) {
       <button class="btn primary">Save</button>
     </div>
   </form>
-  <form method="post" id="deleteUserForm" hidden><input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>"><input type="hidden" name="user_id" id="deleteUserId"></form>
+  <form method="post" id="deleteUserForm" hidden>
+    <input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>">
+    <input type="hidden" name="action" value="delete_user">
+    <input type="hidden" name="user_id" id="deleteUserId">
+  </form>
 </div>
 
 <script src="assets/js/app.js"></script>
