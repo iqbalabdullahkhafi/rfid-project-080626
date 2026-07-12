@@ -22,12 +22,12 @@ const char* SERVER_BASE = "http://10.200.243.38/rfid-project";
 const char* DEVICE_ID = "door_1";
 const char* DEVICE_NAME = "RUANG NOC";
 const char* API_KEY = "3995b8c904f162ec234131664e06d61b";
-const char* LOCAL_UIDS[] = {"13E824D3", "BD9BD421", "AD6DD321"};
+const char* LOCAL_UIDS[] = {"BD9BD421", "AD6DD321"};
 #else
 const char* DEVICE_ID = "door_2";
 const char* DEVICE_NAME = "RUANG MEETING";
-const char* API_KEY = "64a89d158064ba7dba7488e375d6fbe9";
-const char* LOCAL_UIDS[] = {"66E84306", "AD629121", "AD6DD321"};
+const char* API_KEY = "e5360f4840b364080adf14248f57992d";
+const char* LOCAL_UIDS[] = {"AD629121", "AD6DD321"};
 #endif
 
 WiFiClient client;
@@ -105,11 +105,10 @@ void connectWifi() {
   if (WiFi.status() == WL_CONNECTED) {
     Serial.println("[WiFi] Connected");
     Serial.println("[WiFi] IP Address : " + WiFi.localIP().toString());
-    showPermanentStatus("WiFi Online", DEVICE_NAME);
   } else {
     Serial.println("[WiFi] Failed to connect.");
-    showPermanentStatus("WiFi Offline", DEVICE_NAME);
   }
+  showPermanentStatus(WiFi.status() == WL_CONNECTED ? "WiFi Online" : "WiFi Offline", DEVICE_NAME);
 }
 
 String uidHex() {
@@ -129,12 +128,12 @@ bool localAllowed(const String& uid) {
   return false;
 }
 
-void openDoor(const String& source) {
+void openDoor() {
   digitalWrite(RELAY_PIN, LOW);
   doorOpen = true;
   doorCloseAt = millis() + 5000;
   showTemporaryMessage("ACCESS GRANTED", "Door Unlocked", 2000);
-  Serial.println("[Door] Unlock (" + source + ")");
+  Serial.println("[Door] Unlock");
 }
 
 void closeDoorIfNeeded() {
@@ -201,19 +200,17 @@ void pollCommand() {
     Serial.println("[HTTP] Response   : " + String(code));
   }
 
-  if (code >= 200 && code < 300) {
-    String upper = body;
-    upper.toUpperCase();
-    if (upper.indexOf("\"COMMAND\":\"OPEN\"") >= 0) {
-      Serial.println("[Command] OPEN received");
-      openDoor("Remote");
-    } else {
-      Serial.println("[Command] No command");
-    }
+  String upper = body;
+  upper.toUpperCase();
+  if (upper.indexOf("\"COMMAND\":\"OPEN\"") >= 0) {
+    Serial.println("[Command] OPEN received");
+    openDoor();
+  } else {
+    Serial.println("[Command] No command");
   }
 }
 
-bool validateOnline(const String& uid, String& outDecision, String& outUserName) {
+bool validateOnline(const String& uid, String& outDecision) {
   if (WiFi.status() != WL_CONNECTED) return false; // Server cannot be reached
   Serial.println("[Access] Sending request...");
   String url = apiUrl("access.php") + "?device_id=" + encode(DEVICE_ID) + "&uid=" + encode(uid) + "&api_key=" + encode(API_KEY);
@@ -235,20 +232,14 @@ bool validateOnline(const String& uid, String& outDecision, String& outUserName)
     return false; // Server did not respond with success
   }
 
-  if (body.indexOf("\"decision\":\"GRANTED\"") > 0) {
+  String upper = body;
+  upper.toUpperCase();
+  if (upper.indexOf("\"DECISION\":\"GRANTED\"") >= 0) {
     outDecision = "GRANTED";
     Serial.println("[Access] Status   : GRANTED");
-    int nameStart = body.indexOf("\"name\":\"") + 8;
-    if (nameStart > 7) {
-      int nameEnd = body.indexOf("\"", nameStart);
-      if (nameEnd > nameStart) {
-        outUserName = body.substring(nameStart, nameEnd);
-        Serial.println("[Access] User     : " + outUserName);
-      }
-    }
     return true; // Server responded
   }
-  if (body.indexOf("\"decision\":\"DENIED\"") > 0) {
+  if (upper.indexOf("\"DECISION\":\"DENIED\"") >= 0) {
     outDecision = "DENIED";
     Serial.println("[Access] Status   : DENIED");
     return true; // Server responded
@@ -263,8 +254,7 @@ void scanCard() {
   Serial.println("[RFID] UID        : " + uid);
   bool granted = false;
   String decision = "";
-  String userName = "";
-  bool serverResponded = validateOnline(uid, decision, userName);
+  bool serverResponded = validateOnline(uid, decision);
   if (serverResponded) {
     granted = (decision == "GRANTED");
   } else {
@@ -273,7 +263,7 @@ void scanCard() {
     Serial.println("[Access] Mode     : " + tempMode);
     if (systemMode == "hybrid") {
       Serial.println("[Access] Checking local UID list...");
-      granted = localAllowed(uid);
+      granted = localAllowed(uid); // Fallback to local list only if server did not respond
       if (granted) {
         Serial.println("[Access] Status   : GRANTED (Local)");
       } else {
@@ -285,7 +275,7 @@ void scanCard() {
     }
   }
 
-  if (granted) openDoor("RFID");
+  if (granted) openDoor();
   else showTemporaryMessage("ACCESS DENIED", uid, 5000);
 
   rfid.PICC_HaltA();
@@ -306,13 +296,11 @@ void setup() {
   Serial.println("[Init] Relay PIN  : OK");
 
   Wire.begin(I2C_SDA, I2C_SCL);
-  // The begin() method for this library version returns void, so we call it directly.
   lcd.begin(16, 2);
   lcd.setBacklight(255);
   Serial.println("[Init] LCD        : OK");
 
   SPI.begin();
-  // The PCD_Init() method also returns void. We call it and log success.
   rfid.PCD_Init();
   Serial.println("[Init] RFID RC522 : OK");
 

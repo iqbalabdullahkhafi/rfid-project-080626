@@ -433,8 +433,8 @@ foreach ($devices as $device) {
     </div>
     <div class="modal-actions">
       <div style="flex-grow: 1"></div>
-      <button type="button" class="btn outline" data-close>Cancel</button>
-      <button class="btn primary">Save</button>
+      <button type="button" class="btn outline" data-close>Batal</button>
+      <button class="btn primary">Simpan</button>
     </div>
   </form>
   <form method="post" id="deleteUserForm" hidden>
