@@ -8,15 +8,13 @@ if (is_logged_in()) {
     redirect_to('index.php');
 }
 
-// Ambil pesan error dari session jika ada
 $error = '';
 if (isset($_SESSION['login_error'])) {
     $error = $_SESSION['login_error'];
     unset($_SESSION['login_error']);
 }
 
-// Ambil flash message umum (untuk logout, dll)
-$flash_message = flash(); // Panggil flash tanpa parameter untuk mengambil dan membersihkan
+$flash_message = flash(); 
 
 
 if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
@@ -48,7 +46,6 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
         redirect_to('index.php');
     }
 
-    // Simpan error di session dan redirect
     $_SESSION['login_error'] = 'Username atau password salah.';
     redirect_to('login.php');
 }

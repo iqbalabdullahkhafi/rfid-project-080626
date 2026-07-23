@@ -12,7 +12,7 @@
 #define I2C_SDA D2
 #define I2C_SCL D1
 
-#define DEVICE_PROFILE 1
+#define DEVICE_PROFILE 2
 
 const char* WIFI_SSID = "UGM-Hotspot";
 const char* WIFI_PASS = "";

@@ -363,7 +363,7 @@ foreach ($devices as $device) {
               <td><span class="pill type-<?= strtolower($userType) ?>"><?= e($userType) ?></span></td>
               <td><code><?= e($user['uid'] ?: '-') ?></code></td>
               <td><?= e($user['username'] ?: '-') ?></td>
-              <td><?= e($user['access_doors'] ?: '') ?></td>
+              <td><?= e($user['access_doors'] ?: '-') ?></td>
               <td><button class="btn outline" data-edit-user
                 data-id="<?= (int)$user['id'] ?>"
                 data-name="<?= e($user['name']) ?>"
